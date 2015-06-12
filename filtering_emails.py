@@ -1,49 +1,29 @@
 # Amanda Foun
-# 6-3 GOAL: sort through the json files and make it more readable
-# 6-4 GOAL: use regular expressions to clean up to/from fields
-#           group data based on To, From, Date   
-# 6-5 GOAL: add PERIOD LABELS + PERSON LABELS (later, content labels) keys to the dictionary  
 
 import json
 import base64
 import re # allows us to use regular expressions to clean up email addresses
 import datetime
 import time
+from collections import Counter
 
 pplDict = {'Faculty': ['rpricejo@wellesley.edu', 'fturbak@wellesley.edu', 'slee@wellesley.edu', 'sbuck@wellesley.edu'], 
             'StudentLdr': ['jcherayi@wellesley.edu', 'mfendroc@wellesley.edu', 'afoun@wellesley.edu', 'mjain2@wellesley.edu', 'mjung@wellesley.edu', 'ctsui@wellesley.edu', 'svoigt@wellesley.edu', 'sburns@wellesley.edu', 'bcarver@wellesley.edu'],
             'Admin': ['rpurcell@wellesley.edu'],
             'GoogleGroup': ['cs111-spring15@wellesley.edu']}
-            
-# FUNCTION TABLE OF CONTENTS
-# - getEmailAddress
-# - getMonth
-# - getDate
-# - getTime
-# - addPeriodLabel
-# - addToPersonLabel
-# - addFromPersonLabel
-# - cleanBody
-# - sort
-# - printList
-# - countTo
-# - countFrom
-# - countDays
-# - countOneDay
-# - emailsSent
-# - emailContent
-# - threadIDSort
-# - avgTimeDiff
 
-def getEmailAddress(addressLine):
-    '''helper function for sort() that uses regular expressions'''
-    '''returns a list of the email address(es) in the form xxx@wellesley.edu'''
-    match = re.findall(r'[\w\.-]+@[\w\.-]+', addressLine) # finds the email address 
+def getEmailAddress(fullAddressInfo):
+    '''Helper function for sort() that uses regular expressions to grab the email addresses.
+       Returns a list of the email address(es) in the form xxx@wellesley.edu
+       :param fullAddressInfo: a string with the email address. All the other text
+                               will be striped in this function'''
+    match = re.findall(r'[\w\.-]+@[\w\.-]+', fullAddressInfo) # finds the email addresses 
     return match
     
 def getMonth(month_str):
-    '''helper function for getTime()'''
-    '''returns the number associated with the given month'''
+    '''Helper function for getTime()
+       Returns the number associated with the given month
+       :param month_str: name of a month'''
     if month_str == 'Jan':
         return int(1)
     elif month_str == 'Feb':
@@ -57,13 +37,14 @@ def getMonth(month_str):
     elif month_str == 'Jun':
         return int(6)
 
-# Args timestamp will be in the form (string)
+# args timestamp will be in the form (string)
 # Sun, 1 Feb 2015 06:33:04 -0800 (PST)
 # Sat, 31 Jan 2015 19:45:51 -0800 (PST)
                
 def getDate(timestamp): 
-    '''helper funtion for sort() that uses datetime module'''
-    '''returns the date in the form yyyy-mm-dd'''
+    '''Helper funtion for sort() that uses datetime module and
+       returns the date in the form yyyy-mm-dd
+       :param timestamp: string in the form of Mon, 26 Jan 2015 18:26:19 -0800 (PST)'''
     timeInfo = timestamp.split() # divides the timestamp values (strings) into a list
     yr = int(timeInfo[3])
     month = getMonth(timeInfo[2])
@@ -72,8 +53,9 @@ def getDate(timestamp):
     return time.isoformat() # this makes it return in the readable format
 
 def getTime(timestamp): 
-    '''helper funtion for sort() that uses datetime module'''
-    '''returns the time in the form hh:mm:ss'''
+    '''Helper funtion for sort() that uses datetime module and 
+       returns the time in the form hh:mm:ss
+       :param timestamp: string in the form of Mon, 26 Jan 2015 18:26:19 -0800 (PST)'''
     timeInfo = timestamp.split() # divides the timestamp values (strings) into a list
     hms_string = timeInfo[4].split(':') # splits the time data into a list [h,m,s]
     hms = map(int,hms_string) # converts all hr, min, sec values to integers
@@ -81,17 +63,11 @@ def getTime(timestamp):
     m = hms[1]
     s = hms[2]
     time = datetime.time(h,m,s)
-    return time.isoformat() # this makes it return in the readable format
-
-def addPeriodLabel(time):
-    '''@time: time email was sent'''
-    '''returns a list of period labels'''
-    #if addPeriodLacel
-    pass                                  
+    return time.isoformat() # this makes it return in the readable format                                
 
 def addToPersonLabel(toEmail):
-    '''@to: email was sent to this email address (list of str)'''
-    '''returns a list of person labels'''
+    '''Returns a list of person labels
+      :param toEmail: email was sent to this email address (list of str)'''
     for k in pplDict.keys():
         for e in toEmail: 
             if e in pplDict.get(k): # if email address is a faculty's, student leader's or admin's
@@ -99,8 +75,8 @@ def addToPersonLabel(toEmail):
     return 'Student' # not faculty, studentldr or administration so assuming it's a student   
 
 def addFromPersonLabel(fromEmail):
-    '''@from: email was sent from this email address (list of str)'''
-    '''returns a list of person labels'''
+    '''Returns a list of person labels
+      :param fromEmail: email was sent from this email address (list of str)'''
     for k in pplDict.keys(): 
         for e in fromEmail:
             if e in pplDict.get(k): # if email address is a faculty's, student leader's or admin's
@@ -108,9 +84,8 @@ def addFromPersonLabel(fromEmail):
     return 'Student'  # not faculty, studentldr or administration so assuming it's a student                                                                                                                                                                                                                                                                                                                                                                                                                                                   
 
 def cleanBody(mssg):
-    '''@mssg: the body of the email (str)'''
-    '''helper function for sort()'''
-    '''returns a cleaned up version of the input message'''
+    '''Helper function for sort() that returns a cleaned up version of the input message
+       :param mssg: the body of the email (str)'''
     # gets the part of the message before the given string, which sometimes appear at the end of the email
     new = mssg.rsplit('---------- Forwarded message ----------',1)[0]
     new2 = new.rsplit('- lyn -',1)[0]
@@ -118,13 +93,15 @@ def cleanBody(mssg):
     new4 = new3.rsplit(' > On',1)[0]
     new5 = new4.rsplit('Sent from my iPhone',1)[0]
     new6 = new5.rsplit(' -',1)[0]
-    return new6
+    new7 = new6.rsplit('Rhys Price Jones',1)[0]
+    new8 = new7.rsplit('-- rhys',1)[0]
+    return new8
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-def sort(emails): # when testing, use message
+def sort(emails): 
     '''Returns a list of dictionaries, where each elt of the list 
-    is a separate email. KEYS: to, from, time, body, threadID'''
+       is a separate email. KEYS: to, from, time, body, threadID
+       :param emails: JSON file with all the email content'''
     emailList = [] # will store each dictionary
-    
     for i in range(len(emails)): # loop through each email in the message list
         emailDict = {}   
         messageList = [] # will contain the body of the email
@@ -150,7 +127,6 @@ def sort(emails): # when testing, use message
                 if item == '':
                     messageList.remove(item)
         
-       # emailDict['BODY'] = ' '.join(messageList)
         unfilteredbody = ' '.join(messageList)
         emailDict['BODY'] = cleanBody(unfilteredbody)
         emailDict['THREADID'] = emails[i]['threadId']
@@ -159,7 +135,6 @@ def sort(emails): # when testing, use message
         #print getTime(timestamp)[:10]
         emailDict['DATE'] = getDate(timestamp)
         emailDict['TIME'] = getTime(timestamp)
-        
 
         # at each index j, there is a dictionary
         for j in range(len(emails[i]['payload']['headers'])):
@@ -167,7 +142,7 @@ def sort(emails): # when testing, use message
                 emailDict['SUBJECT'] = emails[i]['payload']['headers'][j].values()[1]
             if emails[i]['payload']['headers'][j].values()[0] == 'To':
                 toAddress = emails[i]['payload']['headers'][j].values()[1]
-                email = getEmailAddress(toAddress)
+                email = getEmailAddress(toAddress) 
                 emailDict['TO'] = email #adds just the email address, not the name to the dictionary
                 emailDict['TO_LABEL'] = addToPersonLabel(email)
             if emails[i]['payload']['headers'][j].values()[0] == 'From':
@@ -179,14 +154,15 @@ def sort(emails): # when testing, use message
     return emailList     
 
 def printList(inputList):
-    '''prints out each element of the list on a new line'''
+    '''Prints out each element of the list on a new line to make the info more readable
+       :param inputList: list of elements'''
     for i in range(len(inputList)):
         print inputList[i]['BODY'] # adding ['BODY'] just gives us the body of the emails
         print '\n'
 
 def countTo(listOfDictionaries):
-    '''returns a list of dictionaries, key=email and value=# of emails sent to that user'''
-    '''takes in a list of dictionaries that contain all info about the emails'''
+    '''Returns a list of dictionaries, key=email and value=# of emails sent to that user
+       :param listOFDictionaries: list of dictionaries that contain all info about the emails'''
     allAddresses = [] # list of all the addresses that received emails 
     toList = [] # list of dictionaries
     for dct in listOfDictionaries: # loop through all the dictionaries
@@ -194,16 +170,14 @@ def countTo(listOfDictionaries):
     for a in range(len(allAddresses)): # loop through all addresses
         toDict = {} # key=email address, value =# of emails sent to that address 
         num = allAddresses.count(allAddresses[a]) # number mssgs sent to that email 
-        #for d in toList:
-        #    if ", ".join(allAddresses[a]) in d.keys():
         toDict[", ".join(allAddresses[a])]=num
         if toDict not in toList:
             toList.append(toDict)
     return toList
 
 def countFrom(listOfDictionaries):
-    '''returns a list of dictionaries, key=email and value=# of emails that user sent'''
-    '''@listOfDictionaries: list of dictionaries that contain all info about the emails'''
+    '''Returns a list of dictionaries, key=email and value=# of emails that user sent
+       :param listOfDictionaries: list of dictionaries that contain all info about the emails'''
     allAddresses = [] # list of all the addresses that sent emails 
     fromList = [] # list of dictionaries
     for dct in listOfDictionaries: # loop through all the dictionaries
@@ -217,8 +191,8 @@ def countFrom(listOfDictionaries):
     return fromList
 
 def countDays(listOfDictionaries):
-    '''returns a list of dictionaries, key=date and value=# of emails sent that day'''
-    '''@listOfDictionaries: list of dictionaries that contain all info about the emails'''
+    '''Returns a list of dictionaries, key=date and value=# of emails sent that day
+       :param listOfDictionaries: list of dictionaries that contain all info about the emails'''
     allDays = []
     countList = []
     for dct in listOfDictionaries: # loop through all the dictionaries
@@ -233,9 +207,9 @@ def countDays(listOfDictionaries):
         
 
 def countOneDay(listOfDictionaries,date):
-    '''returns a list of dictionaries, key=hour and value=# of emails sent that hour'''
-    '''@listOfDictionaries: list of dictionaries that contain all info about the emails'''
-    '''@date: in the form (string) yyyy-mm-dd'''
+    '''Returns a list of dictionaries, key=hour and value=# of emails sent that hour
+       :param listOfDictionaries: list of dictionaries that contain all info about the emails
+       :param date: in the form (str) yyyy-mm-dd'''
     allTimes = []
     countList = []
     for dct in listOfDictionaries: # loop through all the dictionaries
@@ -244,21 +218,21 @@ def countOneDay(listOfDictionaries,date):
     for t in range(len(allTimes)):
         dayDict = {}
         num = allTimes.count(allTimes[t])
-        dayDict[allTimes[t]+":00"]=num
+        dayDict[allTimes[t]+":00"]=num # at a given hour, num emails were sent
         if dayDict not in countList:
             countList.append(dayDict) 
     return countList        
 
 def emailsSent(emails): # when testing, use message
     '''Returns a list of dictionaries, where each elt of the list 
-    is a separate email. KEYS: from, numEmails, label. Important for making the csv'''
+       is a separate email. KEYS: from, numEmails, label. Important for making the csv
+       :param emails: JSON file with raw email data'''
     emailList = [] # will store each dictionary
     listOfEmails = sort(emails)
     listOfCounts = countFrom(listOfEmails) 
     dictOfCounts = dict((k,v) for d in listOfCounts for (k,v) in d.items())
     for i in range(len(emails)): # loop through each email in the message list
         emailDict = {}  
-        
         # at each index j, there is a dictionary
         for j in range(len(emails[i]['payload']['headers'])):
             if emails[i]['payload']['headers'][j].values()[0] == 'From':
@@ -271,56 +245,41 @@ def emailsSent(emails): # when testing, use message
             emailList.append(emailDict)
     return emailList 
 
+def emailFrequency(listOfEmails):
+    '''Returns a list of how frequenctly faculty, students, leaders, and admin sent emails
+       :param listOfEmails: list of dictionaries of info about each email'''
+    facFreq = []
+    stuFreq = []
+    stuLeadFreq =[]
+    adminFreq = []
+    total = float(len(listOfEmails))
+    for i in listOfEmails: # finds how many emails each person sent
+        if i['FROM_LABEL'] == 'Faculty':
+            facFreq.append(i)
+        if i['FROM_LABEL'] == 'Student':
+            stuFreq.append(i)    
+        if i['FROM_LABEL'] == 'StudentLdr':
+            stuLeadFreq.append(i)    
+        if i['FROM_LABEL'] == 'Admin':
+            adminFreq.append(i)
+    percentages = [float(len(facFreq))/total,float(len(stuFreq))/total,float(len(stuLeadFreq))/total,float(len(adminFreq))/total]
+    return percentages
+    
 def emailContent(mylist, filename):
-    '''@mylist: list of dictionaries'''
-    '''@filename: name of new file'''
-    '''writes the content into a textfile'''
+    '''Writes the content into a textfile
+       :param mylist: list of dictionaries
+       :param filename: name of new file'''
     textfile = open(filename+'.txt','w')
     for i in mylist:
         #print i['BODY']
         textfile.write(i['BODY'])
     textfile.close()
 
-def threadIDSort(listOfDict):
-    '''returns list of dictionaries where each dictionary has 
-    the key as the threadID and the value as a list of timestamps'''
-    threadDict = {}
-    for fullDict in listOfDict:
-        key = fullDict['THREADID']
-        value = fullDict['DATE'] + ' '+ fullDict['TIME']
-        #dateInt = map(int,date)
-        #time = (fullDict['TIME']).split(':')
-        #timeInt = map(int,time)
-        #timestamp = datetime.datetime(dateInt[0],dateInt[1],dateInt[2],timeInt[0],timeInt[1],timeInt[2])
-        #value = timestamp # in datetime form
-        #print timestamp
-        if key not in threadDict:
-            threadDict[key] = [value]
-        else:
-            threadDict[key].append(value)
-    return {key:threadDict[key] for key in threadDict if len(threadDict[key])>1}
-    
-def avgTimeDiff(dateTimeDict):
-    ''' Gives the difference between two date times in minutes'''
-    fmt = '%Y-%m-%d %H:%M:%S'
-    timeList = []
-    for item in dateTimeDict:
-        time1 = datetime.datetime.strptime(dateTimeDict[item][-1], fmt)
-        time2 = datetime.datetime.strptime(dateTimeDict[item][-2], fmt)
-        timeList.append((time2 - time1))
-    avgList = (str(sum(timeList, datetime.timedelta(0))/len(timeList))).split(":")
-    avgMins = int(avgList[0])*60 + int(avgList[1])
-    return sum(timeList, datetime.timedelta(0))/len(timeList)
-    
 # ~~TESTING 
 
-# reads the json file and prints it out
-json_data = open("cs111EmailsFINAL.json").read()
-message = json.loads(json_data) # format=full  
+json_data = open("cs111EmailsALL.json").read() 
+message = json.loads(json_data)  
 listOfEmails = sort(message)
-
-#print threadIDSort(listOfEmails)
-#print avgTimeDiff(threadIDSort(listOfEmails))
 #emailContent(listOfEmails, 'cleanedEmails')
 #print emailsSent(message)
 #print listOfEmails
@@ -330,38 +289,13 @@ listOfEmails = sort(message)
 #print countOneDay(listOfEmails,'2015-01-26')
 #printList(listOfEmails)
 #print countFrom(listOfEmails)#Lfacist of faculty dictionaries
-#print threadIDSort(listOfEmails)
+#print emailFrequency(listOfEmails)
 
-#lists of dictionaries
-facFreq = [] #all emails with faculty label
-stuFreq = [] # all emails with student label
-stuLeadFreq =[] #all emails with student leader label
-adminFreq = [] #all emails with admin label
-total = float(len(listOfEmails)) # total emails
-
-for i in listOfEmails:
-    if i['FROM_LABEL'] == 'Faculty':
-        facFreq.append(i)
-
-for i in listOfEmails:
-    if i['FROM_LABEL'] == 'Student':
-        stuFreq.append(i)
-
-for i in listOfEmails:
-    if i['FROM_LABEL'] == 'StudentLdr':
-        stuLeadFreq.append(i)
-
-for i in listOfEmails:
-    if i['FROM_LABEL'] == 'Admin':
-        adminFreq.append(i)
-
-# turns a list of dictionaries into one big dictionary
+# Turns a list of dictionaries into one big dictionary
 #result = dict((k,v) for d in count1 for (k,v) in d.items())
-
 #print result
-#percentages = [float(len(facFreq))/total,float(len(stuFreq))/total,float(len(stuLeadFreq))/total,float(len(adminFreq))/total]
 
-# make a csv file from the dictionary
+# Make a csv file from the dictionary
 #import csv
 #
 #csv_columns = ['NUM SENT','FROM','LABEL']
@@ -371,4 +305,5 @@ for i in listOfEmails:
 #    writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
 #    writer.writeheader()
 #    for data in listOfDicts:
-#        writer.writerow(data)   
+#        writer.writerow(data)  
+#            
