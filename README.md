@@ -1,7 +1,7 @@
 # Data-Visualization
 Visualizing data obtained from CS111 Google Group emails.
 
-1. CONTENTS:
+CONTENTS:
 + Email_per_Person_Frequency_Histogram.py
 + email_Frequency_Donut_Chart.py
 + email_Frequency_pieChart.py
