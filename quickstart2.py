@@ -1,5 +1,5 @@
 # quickstart2.py makes a json file, cs111EmailsAll, which is used in filtering_emails.py
-
+#This code was taken from https://developers.google.com/gmail/api/quickstart/python and modified for our needs
 from datetime import datetime
 import os
 
@@ -54,7 +54,7 @@ def get_credentials():
         print 'Storing credentials to ' + credential_path
     return credentials
 
-messageList = []
+messageList = [] # list of all messages
 def main():
     """Shows basic usage of the Gmail API.
 
@@ -64,14 +64,12 @@ def main():
     
     credentials = get_credentials()
     service = build('gmail', 'v1', http=credentials.authorize(Http()))
-
-    #results = service.users().messages().list(userId='me', q='to:cs111-spring15').execute()
-    #for messages in results['messages']:
-    #    GetMessage(service, 'me', messages['id'])
     
+    #following code taken from https://developers.google.com/gmail/api/v1/reference/users/messages/list and modified 
     try:
+        #gets a list of all the emails from your account that were 'to:cs111-spring15
         response = service.users().messages().list(userId='me', q='to:cs111-spring15').execute()
-        
+      
         if 'messages' in response:
             messageList.extend(response['messages'])
 
@@ -80,14 +78,14 @@ def main():
             response = service.users().messages().list(userId='me', q='to:cs111-spring15',pageToken=page_token).execute()
             messageList.extend(response['messages'])
 
-        #mList= messageList
     except errors.HttpError, error:
         print 'An error occurred: %s' % error
+    
     for message in messageList:
         GetMessage(service, 'me', message['id'])
 
 
-allEmails = []
+allEmails = [] # list of all the emails 
 def GetMessage(service, user_id, msg_id):
   """Get a Message with given ID.
 
@@ -103,26 +101,12 @@ def GetMessage(service, user_id, msg_id):
   try:
     message = service.users().messages().get(userId=user_id, id= msg_id, format= 'full').execute()
     allEmails.append(message)
+   
     # Payload formats: full gives lots of random stuff in addition to keys/values
     # minimal gives keys/values (snippets)
     # raw gives random stuff (cleaner than full)
     
-    #return raw
-    #print 'Message snippet: %s' % message['raw']
-    #message = service.users().messages().get(userId=user_id, id= msg_id).payload.parts[0].body.data
-    #print message
-    #print 'Message snippet: %s' % message['payload']
-#
-   #msg_str = base64.urlsafe_b64decode(message['raw'].encode('ASCII'))
-#
-    #mime_msg = email.message_from_string(msg_str)
-    #mime_msg = email.Parser().parsestr(msg_str,'<p>')
 
-    #print mime_msg
-
-    #msg_str = base64.urlsafe_b64decode(message['payload']['parts'][0]['body']['data'].encode('ASCII')) #Worked to get the message
-    #print msg_str
-     
   except errors.HttpError, error:
     print 'An error occurred: %s' % error
 
