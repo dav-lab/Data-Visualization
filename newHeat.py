@@ -6,20 +6,25 @@ from collections import OrderedDict
 from bokeh.models import HoverTool
 
 months = ["Jan","Feb","Mar","Apr","May","Jun"]
-weekNumbers=[]
+weekNumbers=['Week '+str(i) for i in range(1,17)]
 
 dates=[]
 weekNumber=[]
 s = datetime.datetime(2015,1,25)
 e = datetime.datetime(2015,6,2)
 t = s
+count=0
+w=1
 while (t < e):
     t=t+datetime.timedelta(days=1)
     dates.append(t)
-    w=str(months[t.month-1])+str(t.isocalendar()[1])
-    if w not in weekNumbers:
-        weekNumbers.append(w)
-    weekNumber.append(w)
+    if count==7:
+        count=0
+        w+=1
+    else:
+        count+=1
+        weekNumber.append('Week '+str(w))
+    
    
 
 schedule={'2015-01-26': ['Lec 1', 'PS0 due', 'PS1 out'],
@@ -77,8 +82,9 @@ date=[{'2015-06-02': 2}, {'2015-05-18': 2}, {'2015-05-17': 1}, {'2015-05-15': 1}
 weekdays=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
 days=[str(i) for i in range(1,32)]
 colors = [
-    "#75968f", "#a5bab7", "#c9d9d3", "#e2e2e2", "#dfccce",
-    "#ddb7b1", "#cc7878", "#933b41", "#550b1d"
+    "#ffffff", "#ffd6dc", "#ffadba", "#ff8597","#ff5c74", 
+    "#ff4763", "#ff3352", "#ff1f40", "#e00022", "#b8001c",
+    "#8f0015", "#7a0012", "#66000f", "#52000c", "3d0009", "#290006"
 ]
 
 
@@ -108,8 +114,10 @@ for key in sorted(result.iterkeys()):
 
 bins=[]
 for i in range(len(colors)):
-    if i!=len(colors)-1:
-        bins.insert(i,((max(numberEmails)-min(numberEmails))/float(len(colors)))*(i+1))
+    if i==0:
+        bins.insert(i,1)
+    elif i!=len(colors)-1:
+        bins.insert(i,((max(numberEmails))/float(len(colors)))*i)
     else:
         bins.insert(i,max(numberEmails)+1)
 
