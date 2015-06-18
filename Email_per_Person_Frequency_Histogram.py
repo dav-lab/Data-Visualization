@@ -40,16 +40,16 @@ TOOLS = "resize,hover,save,pan,box_zoom,wheel_zoom"
 #    ('Participants', dictionary.values()),
 #])
 
-hover = HoverTool(
-    tooltips = [
-        ("index", "$index"),
-        ("(x,y)", "($x, $y)"),
-        ("desc", "@freqList"),
-    ]
-)
+#hover = HoverTool(
+#    tooltips = [
+#        ("index", "$index"),
+#        ("(x,y)", "($x, $y)"),
+#        ("desc", "@freqList"),
+#    ]
+#)
 
 #hist = Histogram(df, bins=len(normal), legend=True)
-hist = Histogram(df, bins=10, legend=True, title = 'Email per Person Frequency Histogram', tools=[hover], xlabel = 'Numbers of Emails Sent', ylabel = 'Frequency')
+hist = Histogram(df, bins=10, legend=True, title = 'Email per Person Frequency Histogram', xlabel = 'Numbers of Emails Sent', ylabel = 'Frequency')
 
 show(hist)
 

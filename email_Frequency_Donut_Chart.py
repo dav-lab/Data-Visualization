@@ -4,7 +4,7 @@ import base64
 from math import pi, sin, cos
 
 from bokeh.browserlib import view
-from bokeh.colors import skyblue, seagreen, tomato, orchid, firebrick, lightgray
+from bokeh.colors import teal, tomato, gold, yellowgreen
 from bokeh.document import Document
 from bokeh.embed import file_html
 from bokeh.models.glyphs import Wedge, AnnularWedge, ImageURL, Text
@@ -23,7 +23,7 @@ ydr = Range1d(start=-2, end=2)
 title = "Number of Emails Sent"
 plot = Plot(title=title, x_range=xdr, y_range=ydr, plot_width=800, plot_height=800)
 
-colors = {"Faculty": seagreen, "Student": tomato, "StudentLdr": orchid, "Admin": skyblue}
+colors = {"Faculty": teal, "Student": yellowgreen, "StudentLdr": tomato, "Admin": gold}
 
 
 aggregated = df.groupby("Type").agg(sum)#groups and sums the data by type
@@ -45,7 +45,7 @@ person_source = ColumnDataSource(dict(
 
 #creates the inner wedges
 glyph = Wedge(x=0, y=0, radius=1, line_color="white",
-    line_width=2, start_angle="start", end_angle="end", fill_color="colors")
+    line_width=2, start_angle="start", end_angle="end", fill_color="colors", fill_alpha=0.7)
 
 plot.add_glyph(person_source, glyph)
 
@@ -81,7 +81,7 @@ for person, start_angle, end_angle in zip(types, start_angles, end_angles):
     #Following creates outer wedges
     glyph = AnnularWedge(x=0, y=0,
         inner_radius=1, outer_radius=1.5, start_angle="start", end_angle="end",
-        line_color="white", line_width=2, fill_color="fill")
+        line_color="white", line_width=2, fill_color="fill", fill_alpha=0.7)
     plot.add_glyph(source, glyph)
     
     #Following angles the text within the wedges
